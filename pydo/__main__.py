@@ -39,7 +39,7 @@ def find_project_root():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
-    parser.add_argument('command', type=str, nargs='?', default='all', help='Command to invoke.')
+    parser.add_argument('command', type=str, nargs='?', default='default', help='Command to invoke.')
     parser.add_argument('args', nargs='*')
 
     args = parser.parse_args()

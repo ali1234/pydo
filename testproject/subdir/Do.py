@@ -11,5 +11,5 @@ def build(*args):
     touch('somefile')
 
 @command
-def all():
+def default():
     build()

@@ -15,5 +15,5 @@ def build(*args):
     print(ls('-l', 'subdir'))
 
 @command
-def all():
+def default():
     build()
