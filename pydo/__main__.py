@@ -11,7 +11,7 @@ import sys
 import pydo.commands
 
 
-class MyImporter(MetaPathFinder):
+class ProjectImporter(MetaPathFinder):
 
     def __init__(self, path):
         self._path = path
@@ -33,31 +33,34 @@ def find_project_root():
     for p in reversed(path.parents):
         if (p / 'Do.top').exists():
             return p
-    raise Exception('Not in a pydo project.')
+    raise FileNotFoundError
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
     parser.add_argument('command', type=str, help='Command to invoke.')
-    parser.add_argument('vars', nargs='*')
+    parser.add_argument('args', nargs='*')
 
     args = parser.parse_args()
 
     if args.directory is not None:
         os.chdir(args.directory)
 
-    project_root = find_project_root()
-    sys.meta_path.insert(0, MyImporter(project_root))
-    current_dir = pathlib.Path('.').resolve().relative_to(project_root)
-    mod_name = '.'.join(['pydo.project'] + list(current_dir.parts))
-
-    importlib.import_module(mod_name)
-
     try:
-        pydo.commands.commands[mod_name][args.command](*args.vars)
-    except KeyError:
-        print('No such command.')
+        project_root = find_project_root()
+    except FileNotFoundError:
+        print('Not in a pydo project.')
+        exit(-1)
+    else:
+        sys.meta_path.insert(0, ProjectImporter(project_root))
+        current_dir = pathlib.Path('.').resolve().relative_to(project_root)
+        mod_name = '.'.join(['pydo.project'] + list(current_dir.parts))
+        importlib.import_module(mod_name)
+        try:
+            pydo.commands.commands[mod_name][args.command](*args.args)
+        except KeyError:
+            print('No such command.')
 
 if __name__ == '__main__':
     main()
