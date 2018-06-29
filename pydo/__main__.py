@@ -19,9 +19,9 @@ class ProjectImporter(MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
         if fullname.startswith('pydo.project'):
             parts = fullname.split('.')
-            path = self._path / pathlib.Path(*parts[2:]) / 'Do.py'
-            spec = importlib.util.spec_from_file_location(fullname, path)
-            spec.submodule_search_locations=[]
+            path = self._path / pathlib.Path(*parts[2:])
+            spec = importlib.util.spec_from_file_location(fullname, path / 'Do.py')
+            spec.submodule_search_locations=[path]
             return spec
         return None
 
@@ -39,7 +39,7 @@ def find_project_root():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
-    parser.add_argument('command', type=str, help='Command to invoke.')
+    parser.add_argument('command', type=str, nargs='?', default='all', help='Command to invoke.')
     parser.add_argument('args', nargs='*')
 
     args = parser.parse_args()
