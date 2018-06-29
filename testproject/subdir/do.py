@@ -1,8 +1,5 @@
-import pydo.project
+from pydo import *
 
-print('sub imported')
-
-def sub():
-    print('sub')
-    pydo.project.blah()
-
+@command
+def clean():
+    print('clean', __name__)

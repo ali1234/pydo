@@ -1,12 +1,8 @@
-import pydo.project
+from pydo import *
+
 import pydo.project.subdir
 
-print('top imported')
-
-def main():
-    print('main')
-    pydo.project.subdir.sub()
-
-
-def blah():
-    print('blah')
+@command
+def clean():
+    print('clean', __name__)
+    pydo.project.subdir.clean()
