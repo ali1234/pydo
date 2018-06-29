@@ -1,5 +1,5 @@
 from pydo import *
 
 @command
-def clean():
-    print('clean', __name__)
+def clean(*args):
+    pass

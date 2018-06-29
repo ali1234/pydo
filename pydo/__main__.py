@@ -40,6 +40,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
     parser.add_argument('command', type=str, help='Command to invoke.')
+    parser.add_argument('vars', nargs='*')
 
     args = parser.parse_args()
 
@@ -54,7 +55,7 @@ def main():
     importlib.import_module(mod_name)
 
     try:
-        pydo.commands.commands[mod_name][args.command]()
+        pydo.commands.commands[mod_name][args.command](*args.vars)
     except KeyError:
         print('No such command.')
 
