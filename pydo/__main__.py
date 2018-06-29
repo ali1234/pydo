@@ -12,7 +12,7 @@ import pydo.commands
 import pydo.module
 
 
-class ProjectImporter(MetaPathFinder, InspectLoader):
+class ProjectImporter(MetaPathFinder):
 
     def __init__(self, path):
         self._path = path
@@ -20,10 +20,11 @@ class ProjectImporter(MetaPathFinder, InspectLoader):
 
     def find_spec(self, fullname, path, target=None):
         if fullname.startswith('pydo.project'):
-            spec = importlib.util.spec_from_loader(fullname, self)
-            spec.submodule_search_locations = [self.get_file(fullname).parent]
+            spec = importlib.util.spec_from_loader(fullname, ProjectLoader(fullname, self._path))
             return spec
         return None
+
+class ProjectLoader(FileLoader):
 
     def create_module(self, spec):
         return pydo.module.Module(spec.name)
@@ -31,17 +32,17 @@ class ProjectImporter(MetaPathFinder, InspectLoader):
     def is_package(self, fullname):
         return True
 
-    def get_file(self, fullname):
+    def get_filename(self, fullname):
         parts = fullname.split('.')
-        origin = self._path / pathlib.Path(*parts[2:]) / 'Do.py'
+        origin = self.path / pathlib.Path(*parts[2:]) / 'Do.py'
         if origin.exists():
-            return origin
+            return str(origin)
         else:
             raise ImportError
 
     def get_source(self, fullname):
         try:
-            return self.get_file(fullname).read_text()
+            return pathlib.Path(self.get_filename(fullname)).read_text()
         except Exception:
             raise ImportError
 
@@ -74,11 +75,11 @@ def main():
         exit(-1)
     else:
         sys.meta_path.insert(0, ProjectImporter(project_root))
+
         import pydo.project
         pydo.project.some_function()
-        pydo.project.default()
         print(dir(pydo.project))
-
+        print(pydo.project.working_dir)
 
         current_dir = pathlib.Path('.').resolve().relative_to(project_root)
         mod_name = '.'.join(['pydo.project'] + list(current_dir.parts))

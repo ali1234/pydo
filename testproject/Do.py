@@ -17,4 +17,5 @@ def build(*args):
 
 @command
 def default():
+    print(__file__)
     build()

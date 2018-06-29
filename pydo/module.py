@@ -28,3 +28,7 @@ class Module(types.ModuleType, metaclass=ModuleMeta):
 
     def some_function(self):
         pass
+
+    @property
+    def working_dir(self):
+        return pathlib.Path(self.__path__[0])
