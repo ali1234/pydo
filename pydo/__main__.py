@@ -10,6 +10,7 @@ import sys
 
 import pydo.commands
 
+
 class MyImporter(MetaPathFinder):
 
     def __init__(self, path):
@@ -18,18 +19,19 @@ class MyImporter(MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
         if fullname.startswith('pydo.project'):
             parts = fullname.split('.')
-            path = self._path / pathlib.Path(*parts[2:]) / 'do.py'
+            path = self._path / pathlib.Path(*parts[2:]) / 'Do.py'
             spec = importlib.util.spec_from_file_location(fullname, path)
             spec.submodule_search_locations=[]
             return spec
         return None
 
+
 def find_project_root():
     path = pathlib.Path('.').resolve()
-    if (path / 'do.top').exists():
+    if (path / 'Do.top').exists():
         return path
     for p in reversed(path.parents):
-        if (p / 'do.top').exists():
+        if (p / 'Do.top').exists():
             return p
     raise Exception('Not in a pydo project.')
 
@@ -49,7 +51,7 @@ def main():
     current_dir = pathlib.Path('.').resolve().relative_to(project_root)
     mod_name = '.'.join(['pydo.project'] + list(current_dir.parts))
 
-    mod = importlib.import_module(mod_name)
+    importlib.import_module(mod_name)
 
     try:
         pydo.commands.commands[mod_name][args.command]()
