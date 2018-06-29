@@ -1,6 +1,15 @@
-from sh import rm, touch
+from sh import rm, touch, ls, pwd
 
 from pydo import *
+
+
+
+c = Component()
+
+class MyComponent(Component):
+    pass
+
+mc = MyComponent()
 
 @command
 def clean(*args):
@@ -8,8 +17,11 @@ def clean(*args):
 
 @command
 def build(*args):
+    print(mc.__module__)
+    print(pwd())
     touch('somefile')
 
 @command
 def default():
     build()
+

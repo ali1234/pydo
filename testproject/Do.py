@@ -11,8 +11,9 @@ def clean(*args):
 
 @command
 def build(*args):
-    pydo.project.subdir.build(*args)
+    print(pwd())
     print(ls('-l', 'subdir'))
+    pydo.project.subdir.build(*args)
 
 @command
 def default():
