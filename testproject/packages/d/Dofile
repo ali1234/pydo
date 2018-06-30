@@ -1,0 +1,7 @@
+from .. import a, c
+
+__dependencies__ = [a, c]
+
+@command
+def build():
+    sh.make('-C', 'source')

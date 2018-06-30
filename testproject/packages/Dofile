@@ -1,5 +1,8 @@
-@command
-def default(self):
-    for m in __submodules__:
-        print(m)
-        m.default()
+import pydo
+import pydo.config
+
+@property
+def __dependencies__():
+    return pydo.recursive_deps(filter(__submodules__, lambda m: m.__package__ in pydo.config.enabled_packages))
+
+
