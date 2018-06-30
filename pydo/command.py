@@ -24,12 +24,12 @@ def default_command(f):
         print(f.__name__, '(default)', self.__name__, *args, **kwargs)
         f(self, *args, **kwargs)
         os.chdir(cwd)
-    _command.__default_command = True
+    _command._default_command = True
     return _command
 
 
 def gather_default_commands(cls):
     for k, v in vars(cls).items():
-        if hasattr(v, '__default_command'):
+        if hasattr(v, '_default_command'):
             cls.__default_commands__[k] = v
     return cls

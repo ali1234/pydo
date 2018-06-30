@@ -3,8 +3,9 @@ import importlib.abc
 import importlib.util
 import pathlib
 import types
+from functools import wraps
 
-from pydo.command import default_command, gather_default_commands
+from pydo.command import command, default_command, gather_default_commands
 
 
 class ProjectFinder(importlib.abc.MetaPathFinder):
@@ -50,6 +51,10 @@ class ProjectModule(types.ModuleType):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__commands__ = {}
+        self.__dependencies__ = []
+        self.__self__ = self
+        self.command = command
+        self.__defaults__ = ProjectModule
 
     @property
     def __working_dir__(self):
@@ -63,6 +68,6 @@ class ProjectModule(types.ModuleType):
 
     @default_command
     def default(self):
-        for m in self.__submodules__:
+        for m in self.__dependencies__:
             print(m)
             m.default()
