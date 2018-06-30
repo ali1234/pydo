@@ -10,8 +10,9 @@ def command(f):
         cwd = os.getcwd()
         os.chdir(module.__working_dir__)
         print(f.__qualname__, f.__module__, *args, **kwargs)
-        return f(*args, **kwargs)
+        result = f(*args, **kwargs)
         os.chdir(cwd)
+        return result
     module.__commands__[f.__name__] = _command
     return _command
 
@@ -22,8 +23,9 @@ def default_command(f):
         cwd = os.getcwd()
         os.chdir(self.__working_dir__)
         print(f.__name__, '(__default__)', self.__name__, *args, **kwargs)
-        return f(self, *args, **kwargs)
+        result = f(self, *args, **kwargs)
         os.chdir(cwd)
+        return result
     _command._default_command = True
     return _command
 
