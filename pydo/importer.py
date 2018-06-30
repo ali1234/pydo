@@ -4,6 +4,9 @@ import importlib.util
 import pathlib
 import types
 
+from pydo.command import default_command, gather_default_commands
+
+
 class ProjectFinder(importlib.abc.MetaPathFinder):
 
     def __init__(self, path):
@@ -39,6 +42,7 @@ class ProjectLoader(importlib.abc.FileLoader):
             raise ImportError
 
 
+@gather_default_commands
 class ProjectModule(types.ModuleType):
 
     __default_commands__ = {}
@@ -56,3 +60,9 @@ class ProjectModule(types.ModuleType):
         for p in self.__working_dir__.iterdir():
             if p.is_dir() and (p / 'Dofile').exists():
                 yield importlib.import_module('.'.join([self.__package__, p.name]))
+
+    @default_command
+    def default(self):
+        for m in self.__submodules__:
+            print(m)
+            m.default()
