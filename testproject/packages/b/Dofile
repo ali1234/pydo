@@ -1,3 +1,0 @@
-@command
-def build():
-    sh.make('-C', 'source')

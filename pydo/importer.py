@@ -44,14 +44,13 @@ class ProjectLoader(importlib.abc.FileLoader):
 
 
 @gather_default_commands
-class ProjectModule(types.ModuleType):
+class ProjectModule(object):
 
     __default_commands__ = {}
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__()
         self.__commands__ = {}
-        self.__dependencies__ = []
         self.__self__ = self
         self.command = command
         self.__defaults__ = ProjectModule
@@ -66,8 +65,39 @@ class ProjectModule(types.ModuleType):
             if p.is_dir() and (p / 'Dofile').exists():
                 yield importlib.import_module('.'.join([self.__package__, p.name]))
 
+    def walk(self, seen):
+        if id(self) in seen:
+            return
+        seen.add(id(self))
+        for d in self.__auto_deps__:
+            yield from d.walk(seen)
+        yield self
+
+    @property
+    def __auto_deps__(self):
+        try:
+            return self.__dependencies__
+        except AttributeError:
+            return self.__submodules__
+
+    @property
+    def __recursive_deps__(self):
+        seen = set()
+        for m in self.__auto_deps__:
+            yield from m.walk(seen)
+
+    @default_command
+    def check(self):
+        return True
+
+    @default_command
+    def build(self):
+        pass
+
     @default_command
     def default(self):
-        for m in self.__dependencies__:
-            print(m)
-            m.default()
+        for m in self.__recursive_deps__:
+            if m.check():
+                m.build()
+        if self.check():
+            self.build()

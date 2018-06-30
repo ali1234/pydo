@@ -3,5 +3,6 @@ from .. import b
 __dependencies__ = [b]
 
 @command
-def build():
-    sh.make('-C', 'source')
+def check():
+    print(__name__, 'will not be built because it overrides check to return false.')
+    return False

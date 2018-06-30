@@ -1,6 +1,0 @@
-__dependencies__ = __self__.__submodules__
-
-@command
-def default():
-    print('overriding built in default command')
-    __defaults__.default(__self__)
