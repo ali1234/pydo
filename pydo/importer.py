@@ -3,7 +3,7 @@ import importlib.abc
 import importlib.util
 import pathlib
 
-from pydo.command import command, default_command
+from pydo.commands import command, default_command
 
 
 class ProjectFinder(importlib.abc.MetaPathFinder):
@@ -45,7 +45,6 @@ class ProjectModule(object):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
-        self.__commands__ = {}
         self.__enabled__ = True
 
     @property

@@ -4,7 +4,8 @@ import importlib
 import pathlib
 import sys
 
-import pydo.importer
+from . import importer
+from . import commands
 
 
 def find_project_root():
@@ -15,35 +16,6 @@ def find_project_root():
         if (p / 'Do.top').exists():
             return p
     raise FileNotFoundError
-
-
-def build_command(m):
-    for d in m.recursive_deps:
-        if d._check():
-            print('Building', d.friendly_name)
-            d._build()
-    if m._check():
-        print('Building', m.friendly_name)
-        m._build()
-
-
-def check_command(m):
-    result = False
-    for d in m.recursive_deps:
-        if d._check():
-            print(d.friendly_name)
-            result = True
-    if m._check():
-        print(m.friendly_name)
-        result = True
-    return result
-
-
-def deps_command(m):
-    result = False
-    for d in m.recursive_deps:
-        print(d.friendly_name)
-
 
 
 def main():
@@ -63,19 +35,15 @@ def main():
         print('Not in a pydo project.')
         exit(-1)
     else:
-        sys.meta_path.insert(0, pydo.importer.ProjectFinder(project_root))
+        sys.meta_path.insert(0, importer.ProjectFinder(project_root))
         current_dir = pathlib.Path('.').resolve().relative_to(project_root)
         mod_name = '.'.join(['pydo.project'] + list(current_dir.parts))
         mod = importlib.import_module(mod_name)
-        if args.command == 'build':
-            build_command(mod)
-        elif args.command == 'check':
-            check_command(mod)
-        elif args.command == 'deps':
-            deps_command(mod)
-        else:
+        try:
+            commands.builtin_commands[args.command](mod)
+        except KeyError:
             try:
-                mod.__commands__[args.command](*args.args)
+                commands.user_commands[mod.__package__][args.command](*args.args)
             except KeyError:
                 print('No such command.')
 

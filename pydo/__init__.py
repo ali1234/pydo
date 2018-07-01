@@ -1,1 +1,1 @@
-from pydo.command import command
+from .commands import command

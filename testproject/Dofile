@@ -1,0 +1,5 @@
+from pydo import *
+
+@command
+def usercommand():
+    print('This is a user command.')
