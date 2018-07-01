@@ -8,7 +8,7 @@ def command(f):
     @wraps(f)
     def _command(*args, **kwargs):
         cwd = os.getcwd()
-        os.chdir(module.__working_dir__)
+        os.chdir(module.working_dir)
         print(f.__qualname__, f.__module__, *args, **kwargs)
         result = f(*args, **kwargs)
         os.chdir(cwd)
@@ -21,7 +21,7 @@ def default_command(f):
     @wraps(f)
     def _command(self, *args, **kwargs):
         cwd = os.getcwd()
-        os.chdir(self.__working_dir__)
+        os.chdir(self.working_dir)
         print(f.__name__, '(__default__)', self.__name__, *args, **kwargs)
         result = f(self, *args, **kwargs)
         os.chdir(cwd)

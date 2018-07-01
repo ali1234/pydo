@@ -2,8 +2,6 @@ import importlib
 import importlib.abc
 import importlib.util
 import pathlib
-import types
-from functools import wraps
 
 from pydo.command import command, default_command, gather_default_commands
 
@@ -52,16 +50,16 @@ class ProjectModule(object):
         super().__init__()
         self.__commands__ = {}
         self.__self__ = self
-        self.command = command
         self.__defaults__ = ProjectModule
+        self.command = command
 
     @property
-    def __working_dir__(self):
+    def working_dir(self):
         return pathlib.Path(self.__path__[0])
 
     @property
-    def __submodules__(self):
-        for p in self.__working_dir__.iterdir():
+    def submodules(self):
+        for p in self.working_dir.iterdir():
             if p.is_dir() and (p / 'Dofile').exists():
                 yield importlib.import_module('.'.join([self.__package__, p.name]))
 
@@ -69,21 +67,21 @@ class ProjectModule(object):
         if id(self) in seen:
             return
         seen.add(id(self))
-        for d in self.__auto_deps__:
+        for d in self.dependencies:
             yield from d.walk(seen)
         yield self
 
     @property
-    def __auto_deps__(self):
+    def dependencies(self):
         try:
             return self.__dependencies__
         except AttributeError:
-            return self.__submodules__
+            return self.submodules
 
     @property
-    def __recursive_deps__(self):
+    def recursive_deps(self):
         seen = set()
-        for m in self.__auto_deps__:
+        for m in self.dependencies:
             yield from m.walk(seen)
 
     @default_command
@@ -96,7 +94,7 @@ class ProjectModule(object):
 
     @default_command
     def default(self):
-        for m in self.__recursive_deps__:
+        for m in self.recursive_deps:
             if m.check():
                 m.build()
         if self.check():
