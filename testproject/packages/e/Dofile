@@ -1,6 +1,3 @@
-def build():
-    print('This module should not be built because nothing depends on it.')
+__enabled__ = False
 
-def check():
-    print('This module should not be checked because nothing depends on it.')
-    return True
+# This module will not be built because it is not enabled and nothing depends on it.

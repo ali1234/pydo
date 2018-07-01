@@ -20,8 +20,10 @@ def find_project_root():
 def build_command(m):
     for d in m.recursive_deps:
         if d._check():
+            print('Building', d.friendly_name)
             d._build()
     if m._check():
+        print('Building', m.friendly_name)
         m._build()
 
 

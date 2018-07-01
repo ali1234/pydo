@@ -46,7 +46,7 @@ class ProjectModule(object):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.__commands__ = {}
-        self.__magic__ = self
+        self.__enabled__ = True
 
     @property
     def working_dir(self):
@@ -57,6 +57,12 @@ class ProjectModule(object):
         for p in self.working_dir.iterdir():
             if p.is_dir() and (p / 'Dofile').exists():
                 yield importlib.import_module('.'.join([self.__package__, p.name]))
+
+    @property
+    def enabled_submodules(self):
+        for m in self.submodules:
+            if m.__enabled__:
+                yield m
 
     @property
     def friendly_name(self):
@@ -75,7 +81,7 @@ class ProjectModule(object):
         try:
             return self.__dependencies__
         except AttributeError:
-            return self.submodules
+            return self.enabled_submodules
 
     @property
     def recursive_deps(self):

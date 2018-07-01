@@ -2,6 +2,8 @@ from .. import b
 
 __dependencies__ = [b]
 
+__enabled__ = False
+
 def check():
-    print(__name__, 'will not be built because it overrides check to return false.')
+    # This module will never be built because it overrides check.
     return False
