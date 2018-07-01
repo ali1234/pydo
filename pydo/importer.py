@@ -5,6 +5,7 @@ import pathlib
 
 from .module import ProjectModule
 
+
 class ProjectFinder(importlib.abc.MetaPathFinder):
 
     def __init__(self, path):
@@ -38,5 +39,3 @@ class ProjectLoader(importlib.abc.FileLoader):
             return pathlib.Path(self.get_filename(fullname)).read_text()
         except Exception:
             raise ImportError
-
-

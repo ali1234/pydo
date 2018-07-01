@@ -7,10 +7,12 @@ user_commands = defaultdict(dict)
 
 builtin_commands = {}
 
+
 def command(f):
     if f.__name__ in builtin_commands:
         raise NameError
     module = sys.modules[f.__module__]
+
     @wraps(f)
     def _command(*args, **kwargs):
         cwd = os.getcwd()
@@ -18,6 +20,7 @@ def command(f):
         result = f(*args, **kwargs)
         os.chdir(cwd)
         return result
+
     user_commands[module.__package__][f.__name__] = _command
     return _command
 
@@ -30,6 +33,7 @@ def module_command(f):
         result = f(self, *args, **kwargs)
         os.chdir(cwd)
         return result
+
     return _command
 
 
