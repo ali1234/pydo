@@ -3,7 +3,7 @@ import importlib.abc
 import importlib.util
 import pathlib
 
-from pydo.commands import command, default_command
+from pydo.commands import module_command
 
 
 class ProjectFinder(importlib.abc.MetaPathFinder):
@@ -88,14 +88,14 @@ class ProjectModule(object):
         for m in self.dependencies:
             yield from m.walk(seen)
 
-    @default_command
+    @module_command
     def _check(self):
         try:
             return self.check()
         except AttributeError:
             return True
 
-    @default_command
+    @module_command
     def _build(self):
         try:
             self.build()

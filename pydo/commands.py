@@ -22,7 +22,7 @@ def command(f):
     return _command
 
 
-def default_command(f):
+def module_command(f):
     @wraps(f)
     def _command(self, *args, **kwargs):
         cwd = os.getcwd()
