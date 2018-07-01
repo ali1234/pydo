@@ -1,8 +1,6 @@
-@command
 def build():
     print('This module should not be built because nothing depends on it.')
 
-@command
 def check():
     print('This module should not be checked because nothing depends on it.')
     return True

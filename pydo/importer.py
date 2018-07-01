@@ -3,7 +3,7 @@ import importlib.abc
 import importlib.util
 import pathlib
 
-from pydo.command import command, default_command, gather_default_commands
+from pydo.command import command, default_command
 
 
 class ProjectFinder(importlib.abc.MetaPathFinder):
@@ -41,17 +41,12 @@ class ProjectLoader(importlib.abc.FileLoader):
             raise ImportError
 
 
-@gather_default_commands
 class ProjectModule(object):
-
-    __default_commands__ = {}
 
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.__commands__ = {}
-        self.__self__ = self
-        self.__defaults__ = ProjectModule
-        self.command = command
+        self.__magic__ = self
 
     @property
     def working_dir(self):
@@ -62,6 +57,10 @@ class ProjectModule(object):
         for p in self.working_dir.iterdir():
             if p.is_dir() and (p / 'Dofile').exists():
                 yield importlib.import_module('.'.join([self.__package__, p.name]))
+
+    @property
+    def friendly_name(self):
+        return '/'.join(self.__package__.split('.')[1:])
 
     def walk(self, seen):
         if id(self) in seen:
@@ -85,17 +84,16 @@ class ProjectModule(object):
             yield from m.walk(seen)
 
     @default_command
-    def check(self):
-        return True
+    def _check(self):
+        try:
+            return self.check()
+        except AttributeError:
+            return True
 
     @default_command
-    def build(self):
-        pass
-
-    @default_command
-    def default(self):
-        for m in self.recursive_deps:
-            if m.check():
-                m.build()
-        if self.check():
+    def _build(self):
+        try:
             self.build()
+        except AttributeError:
+            pass
+
