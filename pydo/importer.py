@@ -3,8 +3,7 @@ import importlib.abc
 import importlib.util
 import pathlib
 
-from pydo.commands import module_command
-
+from .module import ProjectModule
 
 class ProjectFinder(importlib.abc.MetaPathFinder):
 
@@ -21,7 +20,7 @@ class ProjectFinder(importlib.abc.MetaPathFinder):
 class ProjectLoader(importlib.abc.FileLoader):
 
     def create_module(self, spec):
-        return ProjectModule(spec.name)
+        return ProjectModule()
 
     def is_package(self, fullname):
         return True
@@ -40,65 +39,4 @@ class ProjectLoader(importlib.abc.FileLoader):
         except Exception:
             raise ImportError
 
-
-class ProjectModule(object):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.__enabled__ = True
-
-    @property
-    def working_dir(self):
-        return pathlib.Path(self.__path__[0])
-
-    @property
-    def submodules(self):
-        for p in self.working_dir.iterdir():
-            if p.is_dir() and (p / 'Dofile').exists():
-                yield importlib.import_module('.'.join([self.__package__, p.name]))
-
-    @property
-    def enabled_submodules(self):
-        for m in self.submodules:
-            if m.__enabled__:
-                yield m
-
-    @property
-    def friendly_name(self):
-        return '/'.join(self.__package__.split('.')[1:])
-
-    def walk(self, seen):
-        if id(self) in seen:
-            return
-        seen.add(id(self))
-        for d in self.dependencies:
-            yield from d.walk(seen)
-        yield self
-
-    @property
-    def dependencies(self):
-        try:
-            return self.__dependencies__
-        except AttributeError:
-            return self.enabled_submodules
-
-    @property
-    def recursive_deps(self):
-        seen = set()
-        for m in self.dependencies:
-            yield from m.walk(seen)
-
-    @module_command
-    def _check(self):
-        try:
-            return self.check()
-        except AttributeError:
-            return True
-
-    @module_command
-    def _build(self):
-        try:
-            self.build()
-        except AttributeError:
-            pass
 
