@@ -1,5 +1,6 @@
+from pydo import *
+
 from .. import b
 
-__dependencies__ = [b]
-
-__enabled__ = False
+this_module().dependencies = [b]
+this_module().enabled = False

@@ -1,3 +1,5 @@
+from pydo import *
+
 from .. import a, c
 
-__dependencies__ = [a, c]
+this_module().dependencies = [a, c]

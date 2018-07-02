@@ -1,1 +1,3 @@
-__enabled__ = False
+from pydo import *
+
+this_module().enabled = False

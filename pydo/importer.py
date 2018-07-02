@@ -20,8 +20,11 @@ class ProjectFinder(importlib.abc.MetaPathFinder):
 
 class ProjectLoader(importlib.abc.FileLoader):
 
+    def module_repr(self, module):
+        pass
+
     def create_module(self, spec):
-        return ProjectModule()
+        return ProjectModule(spec.name)
 
     def is_package(self, fullname):
         return True

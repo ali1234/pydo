@@ -1,13 +1,28 @@
 import importlib
+import inspect
 import pathlib
+import types
+
+from descriptors import Descriptor, Bool, List
 
 from .commands import module_command
 
 
-class ProjectModule(object):
+def validated(cls):
+    for k, v in vars(cls).items():
+        if isinstance(v, Descriptor):
+            v.name = k
+    return cls
 
-    def __init__(self):
-        self.__enabled__ = True
+
+@validated
+class ProjectModule(types.ModuleType):
+    enabled = Bool()
+    dependencies = List()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.enabled = True
 
     @property
     def working_dir(self):
@@ -22,7 +37,7 @@ class ProjectModule(object):
     @property
     def enabled_submodules(self):
         for m in self.submodules:
-            if m.__enabled__:
+            if m.enabled:
                 yield m
 
     @property
@@ -33,21 +48,21 @@ class ProjectModule(object):
         if id(self) in seen:
             return
         seen.add(id(self))
-        for d in self.dependencies:
+        for d in self.auto_deps:
             yield from d.walk(seen)
         yield self
 
     @property
-    def dependencies(self):
+    def auto_deps(self):
         try:
-            return self.__dependencies__
+            return self.dependencies
         except AttributeError:
             return self.enabled_submodules
 
     @property
     def recursive_deps(self):
         seen = set()
-        for m in self.dependencies:
+        for m in self.auto_deps:
             yield from m.walk(seen)
 
     @module_command
@@ -63,3 +78,7 @@ class ProjectModule(object):
             self.build()
         except AttributeError:
             pass
+
+
+def this_module() -> ProjectModule:
+    return inspect.getmodule(inspect.currentframe().f_back)

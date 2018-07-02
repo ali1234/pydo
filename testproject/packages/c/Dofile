@@ -1,9 +1,11 @@
+from pydo import *
+
 from .. import b
 
-__dependencies__ = [b]
+this_module().dependencies = [b]
+this_module().enabled = False
 
-__enabled__ = False
 
 def check():
-    # This module will never be built because it overrides check.
+    print(this_module().friendly_name, 'module will never be built because it overrides check.')
     return False

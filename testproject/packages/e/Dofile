@@ -1,3 +1,5 @@
-__enabled__ = False
+from pydo import *
+
+this_module().enabled = False
 
 # This module will not be built because it is not enabled and nothing depends on it.
