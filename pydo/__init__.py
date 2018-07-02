@@ -1,2 +1,2 @@
 from .commands import command
-from .module import this_module
+from .importer import this_module

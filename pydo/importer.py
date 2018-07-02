@@ -43,3 +43,15 @@ class ProjectLoader(importlib.abc.FileLoader):
     def exec_module(self, module):
         code = self.get_code(module.__name__)
         exec(code, module.__dict__)
+        print('LOADED', module, module.__name__, module.__package__)
+
+
+def this_module() -> ProjectModule:
+    filename = inspect.currentframe().f_back.f_code.co_filename
+
+    for m in sys.modules.values():
+        if getattr(m, '__file__', None) == filename:
+            if isinstance(m, ProjectModule):
+                return m
+
+    raise TypeError('this_module() can only be called in Dofiles.')

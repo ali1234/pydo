@@ -1,9 +1,10 @@
 import importlib
 import inspect
 import pathlib
+import sys
 import types
 
-from descriptors import Descriptor, Bool, List
+from descriptors import Validated, Descriptor, Bool, List, Callable
 
 from .commands import module_command
 
@@ -16,12 +17,11 @@ def validated(cls):
 
 
 @validated
-class ProjectModule(types.ModuleType):
+class ProjectModule(object):
     enabled = Bool()
     dependencies = List()
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.enabled = True
 
     @property
@@ -79,6 +79,3 @@ class ProjectModule(types.ModuleType):
         except AttributeError:
             pass
 
-
-def this_module() -> ProjectModule:
-    return inspect.getmodule(inspect.currentframe().f_back)
