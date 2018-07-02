@@ -20,9 +20,6 @@ class ProjectFinder(importlib.abc.MetaPathFinder):
 
 class ProjectLoader(importlib.abc.FileLoader):
 
-    def module_repr(self, module):
-        pass
-
     def create_module(self, spec):
         return ProjectModule(spec.name)
 
@@ -42,3 +39,7 @@ class ProjectLoader(importlib.abc.FileLoader):
             return pathlib.Path(self.get_filename(fullname)).read_text()
         except Exception:
             raise ImportError
+
+    def exec_module(self, module):
+        code = self.get_code(module.__name__)
+        exec(code, module.__dict__)
