@@ -1,7 +1,7 @@
 from pydo import *
 
 # Doing the following would shadow this_module().enabled because it is a
-# descriptor. To prevent that, a SyntaxError will be raised.
+# descriptor. To prevent that, an AttributeError will be raised.
 #enabled = True
 
 # This is the correct way to do it. Since enabled is a descriptor, this will
