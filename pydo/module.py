@@ -3,6 +3,9 @@ import pathlib
 
 from descriptors import Descriptor, Bool, List, Callable
 
+from .helpers import check_timestamps
+from .commands import cwd
+
 
 def validated(cls):
     for k, v in vars(cls).items():
@@ -15,13 +18,21 @@ def validated(cls):
 class ProjectModule(object):
     enabled = Bool()
     dependencies = List()
+    sources = List()
+    targets = List()
     build = Callable()
     check = Callable()
 
     def __init__(self, *args, **kwargs):
         self.enabled = True
         self.build = lambda: None
-        self.check = lambda: True
+
+        def _check(verbose=True):
+            if hasattr(self, 'targets'):
+                return check_timestamps(list(self.auto_sources), self.targets, verbose=verbose)
+            else:
+                return True
+        self.check = cwd(_check, self)
 
     @property
     def working_dir(self):
@@ -43,6 +54,15 @@ class ProjectModule(object):
     def friendly_name(self):
         return '/'.join(self.__package__.split('.')[1:])
 
+    @property
+    def auto_sources(self):
+        try:
+            yield from self.sources
+        except AttributeError:
+            for m in self.auto_deps:
+                if hasattr(m, 'targets'):
+                    yield from (str(m.working_dir / t) for t in m.targets)
+
     def walk(self, seen):
         if id(self) in seen:
             return
@@ -54,9 +74,9 @@ class ProjectModule(object):
     @property
     def auto_deps(self):
         try:
-            return self.dependencies
+            yield from self.dependencies
         except AttributeError:
-            return self.enabled_submodules
+            yield from self.enabled_submodules
 
     @property
     def recursive_deps(self):

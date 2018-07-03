@@ -6,6 +6,7 @@ import pathlib
 import sys
 import traceback
 
+from .commands import cwd
 from .module import ProjectModule
 from .protector import Protector
 
@@ -47,7 +48,7 @@ class ProjectLoader(importlib.abc.FileLoader):
     def exec_module(self, module):
         code = self.get_code(module.__name__)
         try:
-            exec(code, module.__dict__, Protector(module))
+            cwd(exec, module)(code, module.__dict__, Protector(module))
         except Exception:
             traceback.print_exc()
             exit(-1)

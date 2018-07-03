@@ -15,15 +15,14 @@ def repo_files(filename):
     yield sh.git('-C', filename, 'rev-parse', '--absolute-git-dir').split('\n')[0]+'/logs/HEAD'
 
 
-def check_timestamps(sources, targets, verbose=False):
+def check_timestamps(sources, targets, verbose=True):
     try:
         target_timestamps = list(timestamp(f) for f in targets)
-    except FileNotFoundError:
-        return True
-    else:
         source_timestamps = list(timestamp(f) for f in sources)
         if verbose:
             for t, s in itertools.product(zip(target_timestamps, targets), zip(source_timestamps, sources)):
                 if t < s:
                     print(t[1], '<', s[1])
         return min(target_timestamps) < max(source_timestamps)
+    except FileNotFoundError:
+        return True
