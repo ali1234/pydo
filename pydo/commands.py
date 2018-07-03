@@ -66,6 +66,5 @@ def check(m):
 
 @builtin_command
 def deps(m):
-    result = False
     for d in m.recursive_deps:
         print(d.friendly_name)
