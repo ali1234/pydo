@@ -12,16 +12,20 @@ class SyntaxCheckerIgnore(object):
     pass
 
 
-def command(f):
-    module = sys.modules[f.__module__]
-
+def cwd(f, dir):
     @wraps(f)
-    def _command(*args, **kwargs):
+    def _cwd(*args, **kwargs):
         cwd = os.getcwd()
-        os.chdir(module.working_dir)
+        os.chdir(dir)
         result = f(*args, **kwargs)
         os.chdir(cwd)
         return result
+    return _cwd
+
+
+def command(f):
+    module = sys.modules[f.__module__]
+    _command = cwd(f, module.working_dir)
 
     if f.__name__ in builtin_commands:
         setattr(module, f.__name__, _command)
