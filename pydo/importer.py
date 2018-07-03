@@ -1,9 +1,13 @@
 import importlib
 import importlib.abc
 import importlib.util
+import inspect
 import pathlib
+import sys
+import traceback
 
 from .module import ProjectModule
+from .protector import Protector
 
 
 class ProjectFinder(importlib.abc.MetaPathFinder):
@@ -42,8 +46,11 @@ class ProjectLoader(importlib.abc.FileLoader):
 
     def exec_module(self, module):
         code = self.get_code(module.__name__)
-        exec(code, module.__dict__)
-        print('LOADED', module, module.__name__, module.__package__)
+        try:
+            exec(code, module.__dict__, Protector(module))
+        except Exception:
+            traceback.print_exc()
+            exit(-1)
 
 
 def this_module() -> ProjectModule:
