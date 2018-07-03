@@ -51,7 +51,7 @@ def build(m):
 def check(m):
     result = False
     for d in m.recursive_deps:
-        if d._check():
+        if d.check():
             print(d.friendly_name)
             result = True
     if m.check():
