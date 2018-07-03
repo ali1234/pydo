@@ -8,9 +8,11 @@ user_commands = defaultdict(dict)
 builtin_commands = {}
 
 
+class SyntaxCheckerIgnore(object):
+    pass
+
+
 def command(f):
-    if f.__name__ in builtin_commands:
-        raise NameError
     module = sys.modules[f.__module__]
 
     @wraps(f)
@@ -21,20 +23,12 @@ def command(f):
         os.chdir(cwd)
         return result
 
-    user_commands[module.__package__][f.__name__] = _command
-    return _command
-
-
-def module_command(f):
-    @wraps(f)
-    def _command(self, *args, **kwargs):
-        cwd = os.getcwd()
-        os.chdir(self.working_dir)
-        result = f(self, *args, **kwargs)
-        os.chdir(cwd)
-        return result
-
-    return _command
+    if f.__name__ in builtin_commands:
+        setattr(module, f.__name__, _command)
+        return SyntaxCheckerIgnore
+    else:
+        user_commands[module.__package__][f.__name__] = _command
+        return _command
 
 
 def builtin_command(f):
@@ -45,12 +39,12 @@ def builtin_command(f):
 @builtin_command
 def build(m):
     for d in m.recursive_deps:
-        if d._check():
+        if d.check():
             print('Building', d.friendly_name)
-            d._build()
-    if m._check():
+            d.build()
+    if m.check():
         print('Building', m.friendly_name)
-        m._build()
+        m.build()
 
 
 @builtin_command
@@ -60,7 +54,7 @@ def check(m):
         if d._check():
             print(d.friendly_name)
             result = True
-    if m._check():
+    if m.check():
         print(m.friendly_name)
         result = True
     return result

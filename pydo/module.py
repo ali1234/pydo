@@ -1,12 +1,7 @@
 import importlib
-import inspect
 import pathlib
-import sys
-import types
 
-from descriptors import Validated, Descriptor, Bool, List, Callable
-
-from .commands import module_command
+from descriptors import Descriptor, Bool, List, Callable
 
 
 def validated(cls):
@@ -20,9 +15,13 @@ def validated(cls):
 class ProjectModule(object):
     enabled = Bool()
     dependencies = List()
+    build = Callable()
+    check = Callable()
 
     def __init__(self, *args, **kwargs):
         self.enabled = True
+        self.build = lambda: None
+        self.check = lambda: True
 
     @property
     def working_dir(self):
@@ -64,18 +63,4 @@ class ProjectModule(object):
         seen = set()
         for m in self.auto_deps:
             yield from m.walk(seen)
-
-    @module_command
-    def _check(self):
-        try:
-            return self.check()
-        except AttributeError:
-            return True
-
-    @module_command
-    def _build(self):
-        try:
-            self.build()
-        except AttributeError:
-            pass
 
