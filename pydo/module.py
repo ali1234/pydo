@@ -36,7 +36,7 @@ class ProjectModule(object):
 
     @property
     def working_dir(self):
-        return pathlib.Path(self.__path__[0])
+        return pathlib.Path(self.__file__).parent
 
     @property
     def submodules(self):
