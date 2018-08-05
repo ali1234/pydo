@@ -22,7 +22,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-D', '--debug', action='store_true', help='Print internal debugging messages.')
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
-    parser.add_argument('command', type=str, nargs='?', default=None, help='Command to invoke.')
+    parser.add_argument('command', type=str, nargs='?', default='default', help='Command to invoke.')
     parser.add_argument('args', nargs='*')
 
     args = parser.parse_args()
