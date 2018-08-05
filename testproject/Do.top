@@ -1,3 +1,0 @@
-from .packages import d
-
-enabled_packages = [d]

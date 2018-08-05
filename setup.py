@@ -9,7 +9,7 @@ setup(
     author='Alistair Buxton',
     author_email='a.j.buxton@gmail.com',
     description='A metabuild automation system.',
-    install_requires=['descriptors', 'sh'],
+    install_requires=[],
     entry_points={
         'console_scripts': [
             'pydo = pydo.__main__:main'

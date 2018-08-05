@@ -3,8 +3,8 @@ import os
 import importlib
 import pathlib
 import sys
+import logging
 
-from . import importer
 from . import commands
 
 
@@ -20,11 +20,15 @@ def find_project_root():
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-D', '--debug', action='store_true', help='Print internal debugging messages.')
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
-    parser.add_argument('command', type=str, nargs='?', default='build', help='Command to invoke.')
+    parser.add_argument('command', type=str, nargs='?', default=None, help='Command to invoke.')
     parser.add_argument('args', nargs='*')
 
     args = parser.parse_args()
+
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
 
     if args.directory is not None:
         os.chdir(args.directory)
@@ -35,17 +39,15 @@ def main():
         print('Not in a pydo project.')
         exit(-1)
     else:
-        sys.meta_path.insert(0, importer.ProjectFinder(project_root))
-        current_dir = pathlib.Path('.').resolve().relative_to(project_root)
-        mod_name = '.'.join(['pydo.project'] + list(current_dir.parts))
+        sys.path.insert(0, str(project_root.parent))
+        current_dir = pathlib.Path('.').resolve().relative_to(project_root.parent)
+        mod_name = '.'.join(list(current_dir.parts))
         mod = importlib.import_module(mod_name)
+
         try:
-            commands.builtin_commands[args.command](mod)
+            commands.commands[mod.__package__][args.command](*args.args)
         except KeyError:
-            try:
-                commands.user_commands[mod.__package__][args.command](*args.args)
-            except KeyError:
-                print('No such command.')
+            print('No such command.')
 
 
 if __name__ == '__main__':

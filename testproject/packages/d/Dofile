@@ -1,5 +1,0 @@
-from pydo import *
-
-from .. import a, c
-
-this_module().dependencies = [a, c]

@@ -1,3 +1,0 @@
-from pydo import *
-
-this_module().enabled = False
