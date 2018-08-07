@@ -14,7 +14,7 @@ def cwd(f, module):
     def _cwd(*args, **kwargs):
         old_dir = os.getcwd()
         os.chdir(pathlib.Path(module.__file__).parent)
-        logger.debug('module={:s}, cwd={:s}, command={:s}'.format(module.__file__, os.getcwd(), f.__name__))
+        logger.debug(f'{module.__name__.partition(".")[2]}:{f.__name__}')
         result = f(*args, **kwargs)
         os.chdir(old_dir)
         return result

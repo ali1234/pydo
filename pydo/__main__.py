@@ -22,7 +22,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-D', '--debug', action='store_true', help='Print internal debugging messages.')
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
-    parser.add_argument('command', type=str, nargs='?', default='default', help='Command to invoke.')
+    parser.add_argument('command', type=str, nargs='?', default=None, help='Command to invoke.')
     parser.add_argument('args', nargs='*')
 
     args = parser.parse_args()
@@ -41,13 +41,29 @@ def main():
     else:
         sys.path.insert(0, str(project_root.parent))
         current_dir = pathlib.Path('.').resolve().relative_to(project_root.parent)
-        mod_name = '.'.join(list(current_dir.parts))
-        mod = importlib.import_module(mod_name)
 
-        try:
-            commands.commands[mod.__package__][args.command](*args.args)
-        except KeyError:
-            print('No such command.')
+        if args.command is not None:
+            command = args.command.split(':')
+            if len(command) == 1:
+                mod_name = '.'.join(list(current_dir.parts))
+                command = command[0]
+            elif len(command) == 2:
+                if len(command[0]) > 0:
+                    mod_name = '.'.join([project_root.name, command[0]])
+                else:
+                    mod_name = project_root.name
+                command = command[1]
+            else:
+                print('Malformed command.')
+                exit(-1)
+
+            print(mod_name, command)
+
+            mod = importlib.import_module(mod_name)
+            try:
+                commands.commands[mod.__package__][command](*args.args)
+            except KeyError:
+                print('No such command.')
 
 
 if __name__ == '__main__':
