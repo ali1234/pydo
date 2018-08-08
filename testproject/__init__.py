@@ -1,12 +1,11 @@
-import os
+import pathlib
 
 from pydo import *
 
-@command
-def usercommand():
-    '''
-    Help for usercommand.
-    '''
-    subdir.subcommand()
-
 from . import subdir
+
+@command(consumes=[subdir.output])
+def check():
+    call([
+        f'cat {subdir.output}',
+    ])

@@ -1,13 +1,18 @@
-import os
+import pathlib
 
 from pydo import *
 
-from .. import usercommand
+this_dir = pathlib.Path(__file__).parent
 
-@command
-def subcommand():
-    pass
+input = this_dir / 'input.txt'
+output = this_dir / 'output.txt'
 
-@command
-def other_subcommand():
-    usercommand()
+@command(produces=[output], consumes=[input])
+def build():
+    '''
+    Help for build command goes here.
+    '''
+    call([
+        f'cp {input} {output}',
+    ])
+

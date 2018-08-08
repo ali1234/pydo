@@ -29,6 +29,8 @@ def main():
 
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     if args.directory is not None:
         os.chdir(args.directory)
@@ -42,7 +44,9 @@ def main():
         sys.path.insert(0, str(project_root.parent))
         current_dir = pathlib.Path('.').resolve().relative_to(project_root.parent)
 
-        if args.command is not None:
+        if args.command is None:
+            print('No command specified.')
+        else:
             command = args.command.split(':')
             if len(command) == 1:
                 mod_name = '.'.join(list(current_dir.parts))
@@ -56,8 +60,6 @@ def main():
             else:
                 print('Malformed command.')
                 exit(-1)
-
-            print(mod_name, command)
 
             mod = importlib.import_module(mod_name)
             try:
