@@ -21,10 +21,10 @@ class MalformedCommand(Exception):
 
 def find_project_root():
     path = pathlib.Path('.').resolve()
-    if (path / 'Do.top').exists():
+    if (path / '.pydo').is_dir():
         return path
     for p in reversed(path.parents):
-        if (p / 'Do.top').exists():
+        if (p / '.pydo').is_dir():
             return p
     raise ProjectNotFound
 
@@ -51,6 +51,7 @@ def main():
     parser.add_argument('-D', '--debug', action='store_true', help='Print internal debugging messages.')
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
     group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-i', '--init', action='store_true', help='Initialize project.')
     group.add_argument('-l', '--commands', action='store_true', help='List available commands.')
     group.add_argument('-H', '--helpcmd', type=str, metavar='COMMAND', nargs='?', default=None, help='Show help for command.')
     group.add_argument('command', type=str, metavar='COMMAND', nargs='?', default=None, help='Command to invoke.')
@@ -65,6 +66,10 @@ def main():
 
     if args.directory is not None:
         os.chdir(args.directory)
+
+    if args.init:
+        pathlib.Path('.pydo').mkdir()
+        exit(0)
 
     try:
         project_root = find_project_root()
