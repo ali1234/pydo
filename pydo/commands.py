@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 commands = defaultdict(dict)
 producers = {}
-consumers = {}
 
 
 def command(produces=[], consumes=[]):
@@ -43,11 +42,8 @@ def command(produces=[], consumes=[]):
 
             logger.debug('{name} is up to date.')
 
-
         for product in produces:
             producers[product] = __command
-
-        consumers[__command] = consumes
 
         commands[module.__package__][f.__name__] = __command
         return __command

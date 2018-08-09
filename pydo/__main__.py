@@ -8,6 +8,17 @@ import logging
 from . import commands
 
 
+class ProjectNotFound(Exception):
+    pass
+
+class CommandNotFound(Exception):
+    pass
+
+class MalformedCommand(Exception):
+    pass
+
+
+
 def find_project_root():
     path = pathlib.Path('.').resolve()
     if (path / 'Do.top').exists():
@@ -15,15 +26,35 @@ def find_project_root():
     for p in reversed(path.parents):
         if (p / 'Do.top').exists():
             return p
-    raise FileNotFoundError
+    raise ProjectNotFound
+
+
+def parse_command(command, project_root):
+    current_dir = pathlib.Path('.').resolve().relative_to(project_root.parent)
+
+    if len(command) == 1:
+        mod_name = '.'.join(list(current_dir.parts))
+        command = command[0]
+    elif len(command) == 2:
+        if len(command[0]) > 0:
+            mod_name = '.'.join([project_root.name, command[0]])
+        else:
+            mod_name = project_root.name
+        command = command[1]
+    else:
+        raise MalformedCommand
+    return (mod_name, command)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-D', '--debug', action='store_true', help='Print internal debugging messages.')
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
-    parser.add_argument('command', type=str, nargs='?', default=None, help='Command to invoke.')
-    parser.add_argument('args', nargs='*')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-l', '--commands', action='store_true', help='List available commands.')
+    group.add_argument('-H', '--helpcmd', type=str, metavar='COMMAND', nargs='?', default=None, help='Show help for command.')
+    group.add_argument('command', type=str, metavar='COMMAND', nargs='?', default=None, help='Command to invoke.')
+
 
     args = parser.parse_args()
 
@@ -37,36 +68,34 @@ def main():
 
     try:
         project_root = find_project_root()
-    except FileNotFoundError:
+        sys.path.insert(0, str(project_root.parent))
+        importlib.import_module(project_root.name)
+
+        if args.commands:
+            print('Command list:')
+            for module, d in commands.commands.items():
+                for c, f in d.items():
+                    print(f'{module.partition(".")[2]}:{f.__name__}')
+        else:
+            command = (args.command or args.helpcmd).split(':')
+            mod_name, command = parse_command(command, project_root)
+            mod = importlib.import_module(mod_name)
+            if args.command:
+                commands.commands[mod.__name__][command]()
+            elif args.helpcmd:
+                help(commands.commands[mod.__name__][command])
+
+    except ProjectNotFound:
         print('Not in a pydo project.')
         exit(-1)
-    else:
-        sys.path.insert(0, str(project_root.parent))
-        current_dir = pathlib.Path('.').resolve().relative_to(project_root.parent)
 
-        if args.command is None:
-            print('No command specified.')
-        else:
-            command = args.command.split(':')
-            if len(command) == 1:
-                mod_name = '.'.join(list(current_dir.parts))
-                command = command[0]
-            elif len(command) == 2:
-                if len(command[0]) > 0:
-                    mod_name = '.'.join([project_root.name, command[0]])
-                else:
-                    mod_name = project_root.name
-                command = command[1]
-            else:
-                print('Malformed command.')
-                exit(-1)
+    except CommandNotFound:
+        print('No such command.')
+        exit(-1)
 
-            mod = importlib.import_module(mod_name)
-            try:
-                commands.commands[mod.__package__][command](*args.args)
-            except KeyError:
-                print('No such command.')
-
+    except MalformedCommand:
+        print('Malformed command.')
+        exit(-1)
 
 if __name__ == '__main__':
     main()
