@@ -17,8 +17,13 @@ def command(produces=[], consumes=[]):
     def _command(f):
         module = sys.modules[f.__module__]
         name = f'{module.__name__.partition(".")[2]}:{f.__name__}'
+
+        logger.debug(f'Registering command {name} : {consumes} => {produces}.')
+
         @wraps(f)
         def __command():
+
+            logger.debug(f'Considering {name}...')
 
             for c in consumes:
                 if c in producers:
@@ -31,7 +36,7 @@ def command(produces=[], consumes=[]):
                 return f()
 
             for p in produces:
-                if not p.exists:
+                if not p.exists():
                     logger.debug(f'Running {name} because {p} doesn\'t exist.')
                     return f()
 
@@ -40,7 +45,7 @@ def command(produces=[], consumes=[]):
                     logger.debug(f'Running {name} because {p} is older than {c}.')
                     return f()
 
-            logger.debug('{name} is up to date.')
+            logger.debug(f'{name} is up to date.')
 
         for product in produces:
             producers[product] = __command
