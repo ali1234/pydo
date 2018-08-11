@@ -12,7 +12,7 @@ commands = defaultdict(dict)
 producers = {}
 
 
-def command(produces=[], consumes=[]):
+def command(produces=[], consumes=[], always=False):
 
     def _command(f):
         module = sys.modules[f.__module__]
@@ -28,6 +28,10 @@ def command(produces=[], consumes=[]):
             for c in consumes:
                 if c in producers:
                     producers[c]()
+
+            if always:
+                logger.debug(f'Running {name} because always is True.')
+                return f()
 
             # if f has no products it must have been explicitly invoked
             # so run it unconditionally
