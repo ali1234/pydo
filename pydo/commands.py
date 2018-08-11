@@ -50,7 +50,8 @@ def command(produces=[], consumes=[]):
         for product in produces:
             producers[product] = __command
 
-        commands[module.__package__][f.__name__] = __command
+        if f.__name__[0] != '_':
+            commands[module.__package__][f.__name__] = __command
         return __command
 
     return _command
