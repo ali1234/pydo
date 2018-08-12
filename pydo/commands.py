@@ -10,7 +10,16 @@ logger = logging.getLogger(__name__)
 
 commands = defaultdict(dict)
 producers = {}
+consumers = {}
 
+def walk_producers(f, result, seen):
+    if f in seen:
+        return
+    seen.add(f)
+    for c in consumers[f]:
+        if c in producers:
+            walk_producers(producers[c], result, seen)
+    result.append(f)
 
 def command(produces=[], consumes=[], always=False):
 
@@ -21,13 +30,7 @@ def command(produces=[], consumes=[], always=False):
         logger.debug(f'Registering command {name} : {consumes} => {produces}.')
 
         @wraps(f)
-        def __command():
-
-            logger.debug(f'Considering {name}...')
-
-            for c in consumes:
-                if c in producers:
-                    producers[c]()
+        def _run_cmd_if_necessary():
 
             if always:
                 logger.debug(f'Running {name} because always is True.')
@@ -52,11 +55,22 @@ def command(produces=[], consumes=[], always=False):
             logger.debug(f'{name} is up to date.')
 
         for product in produces:
-            producers[product] = __command
+            producers[product] = _run_cmd_if_necessary
+
+        consumers[_run_cmd_if_necessary] = consumes
+
+        @wraps(_run_cmd_if_necessary)
+        def _consider_cmd_and_deps():
+            logger.debug(f'Considering {name}...')
+
+            deps = []
+            walk_producers(_run_cmd_if_necessary, deps, set())
+            for f in deps:
+                f()
 
         if f.__name__[0] != '_':
-            commands[module.__package__][f.__name__] = __command
-        return __command
+            commands[module.__package__][f.__name__] = _consider_cmd_and_deps
+        return _consider_cmd_and_deps
 
     return _command
 
