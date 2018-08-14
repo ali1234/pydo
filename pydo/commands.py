@@ -52,7 +52,7 @@ def command(produces=[], consumes=[], always=False):
                     logger.debug(f'Running {name} because {p} is older than {c}.')
                     return f()
 
-            logger.debug(f'{name} is up to date.')
+            logger.debug(f'Not running {name} because it is up to date.')
 
         for product in produces:
             producers[product] = _run_cmd_if_necessary
@@ -61,8 +61,6 @@ def command(produces=[], consumes=[], always=False):
 
         @wraps(_run_cmd_if_necessary)
         def _consider_cmd_and_deps():
-            logger.debug(f'Considering {name}...')
-
             deps = []
             walk_producers(_run_cmd_if_necessary, deps, set())
             for f in deps:
