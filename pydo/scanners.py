@@ -6,7 +6,8 @@ def git(repo, *cmd):
 
 def git_repo_scan_inner(*repos):
     for r in repos:
-        yield from git(r, 'ls-files', '-mo', '--exclude-standard').split(b'\n')[:-1]
+        for p in git(r, 'ls-files', '-mo', '--exclude-standard').split(b'\n')[:-1]:
+            yield r / p
         yield git(r, 'rev-parse', '--absolute-git-dir').split(b'\n')[0] + b'/logs/HEAD'
 
 def git_repo_scan(*repos):
