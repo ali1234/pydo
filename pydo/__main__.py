@@ -72,9 +72,9 @@ def main():
         exit(0)
 
     try:
-        project_root = find_project_root()
-        sys.path.insert(0, str(project_root.parent))
-        importlib.import_module(project_root.name)
+        commands.project_root = find_project_root()
+        sys.path.insert(0, str(commands.project_root.parent))
+        importlib.import_module(commands.project_root.name)
 
         if args.commands:
             print('Command list:')
@@ -83,7 +83,7 @@ def main():
                     print(f'{module.partition(".")[2]}:{f.__name__}')
         else:
             command = (args.command or args.helpcmd).split(':')
-            mod_name, command = parse_command(command, project_root)
+            mod_name, command = parse_command(command, commands.project_root)
             mod = importlib.import_module(mod_name)
             if args.command:
                 commands.commands[mod.__name__][command]()

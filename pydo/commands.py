@@ -12,6 +12,8 @@ commands = defaultdict(dict)
 producers = {}
 consumers = {}
 
+project_root = None
+
 def walk_producers(f, result, seen):
     if f in seen:
         return
@@ -21,11 +23,15 @@ def walk_producers(f, result, seen):
             walk_producers(producers[c], result, seen)
     result.append(f)
 
-def command(produces=[], consumes=[], always=False):
+
+def command(produces=[], consumes=[], always=False, module=None):
 
     def _command(f):
-        module = sys.modules[f.__module__]
-        name = f'{module.__name__.partition(".")[2]}:{f.__name__}'
+        _module = module
+        if _module is None:
+            _module = sys.modules[f.__module__]
+
+        name = f'{_module.__name__.partition(".")[2]}:{f.__name__}'
 
         logger.debug(f'Registering command {name} : {consumes} => {produces}.')
 
@@ -67,7 +73,7 @@ def command(produces=[], consumes=[], always=False):
                 f()
 
         if f.__name__[0] != '_':
-            commands[module.__package__][f.__name__] = _consider_cmd_and_deps
+            commands[_module.__package__][f.__name__] = _consider_cmd_and_deps
         return _consider_cmd_and_deps
 
     return _command
