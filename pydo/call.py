@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def call(commands, check=True, shell=False, env=None):
     for c in commands:
         logger.info(c)
