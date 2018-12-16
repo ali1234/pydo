@@ -24,7 +24,12 @@ def walk_producers(f, result, seen):
     result.append(f)
 
 
-def command(produces=[], consumes=[], always=False, module=None):
+def command(produces=None, consumes=None, always=False, module=None):
+
+    if produces is None:
+        produces = []
+    if consumes is None:
+        consumes = []
 
     def _command(f):
         _module = module
