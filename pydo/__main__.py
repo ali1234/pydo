@@ -65,7 +65,7 @@ def main():
 
     args = parser.parse_args()
 
-    loghelper.config(args.debug, args.colour or sys.stdin.isatty())
+    loghelper.config(args.debug, args.colour or sys.stdout.isatty())
 
     logger = logging.getLogger('core')
 
