@@ -55,7 +55,7 @@ def main():
     parser.add_argument('-D', '--debug', action='store_true', help='Print internal debugging messages.')
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
     parser.add_argument('-c', '--colour', action='store_true', help='Force colour output.')
-    parser.add_argument('-s', '--subprocess_verbosity', type=int, default=1, help='How much output to show from called subprocesses.')
+    parser.add_argument('-s', '--subprocess-verbosity', type=int, default=1, help='How much output to show from called subprocesses.')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-i', '--init', action='store_true', help='Initialize project.')
     group.add_argument('-l', '--commands', action='store_true', help='List available commands.')
