@@ -7,7 +7,7 @@ import logging
 
 from . import loghelper
 from . import commands
-from . import call
+from . import utils
 
 class ProjectNotFound(Exception):
     pass
@@ -69,8 +69,7 @@ def main():
 
     logger = logging.getLogger('core')
 
-    call.verbosity = args.subprocess_verbosity
-    print(call.verbosity)
+    utils.verbosity = args.subprocess_verbosity
 
     if args.directory is not None:
         os.chdir(args.directory)
