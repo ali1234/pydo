@@ -5,13 +5,17 @@ import pathlib
 import sys
 import logging
 
+from . import loghelper
 from . import commands
-
+from . import call
 
 class ProjectNotFound(Exception):
     pass
 
 class CommandNotFound(Exception):
+    pass
+
+class SubmoduleNotFound(Exception):
     pass
 
 class MalformedCommand(Exception):
@@ -50,6 +54,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-D', '--debug', action='store_true', help='Print internal debugging messages.')
     parser.add_argument('-C', '--directory', type=str, default=None, help='Change directory before doing anything.')
+    parser.add_argument('-c', '--colour', action='store_true', help='Force colour output.')
+    parser.add_argument('-s', '--subprocess_verbosity', type=int, default=1, help='How much output to show from called subprocesses.')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-i', '--init', action='store_true', help='Initialize project.')
     group.add_argument('-l', '--commands', action='store_true', help='List available commands.')
@@ -59,12 +65,12 @@ def main():
 
     args = parser.parse_args()
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+    loghelper.config(args.debug, args.colour or sys.stdin.isatty())
 
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger('core')
+
+    call.verbosity = args.subprocess_verbosity
+    print(call.verbosity)
 
     if args.directory is not None:
         os.chdir(args.directory)
@@ -84,27 +90,38 @@ def main():
                 for c, f in d.items():
                     print(f'{module.partition(".")[2]}:{f.__name__}')
         else:
-            command = (args.command or args.helpcmd).split(':')
-            mod_name, command = parse_command(command, commands.project_root)
-            mod = importlib.import_module(mod_name)
+            raw_command = (args.command or args.helpcmd).split(':')
+            mod_name, command = parse_command(raw_command, commands.project_root)
             try:
-                if args.command:
-                    commands.commands[mod.__name__][command]()
-                elif args.helpcmd:
-                    help(commands.commands[mod.__name__][command])
+                mod = importlib.import_module(mod_name)
+            except ModuleNotFoundError as e:
+                if e.name == mod_name:
+                    raise SubmoduleNotFound(mod_name.partition('.')[2])
+                else:
+                    raise e
+            try:
+                f = commands.commands[mod.__name__][command]
             except KeyError:
-                raise CommandNotFound(mod.__name__, command)
+                raise CommandNotFound(f'"{mod_name.partition(".")[2]}"' or 'the root of this project', command)
+            if args.command:
+                f()
+            elif args.helpcmd:
+                help(f)
 
     except ProjectNotFound as e:
-        logger.fatal('Not in a pydo project.')
+        logger.error('Not in a pydo project.')
         exit(-1)
 
     except CommandNotFound as e:
-        logger.fatal(f'"{args.command or args.helpcmd}" is not a command. See "pydo -l" for a list of available commands.')
+        logger.error(f'"{e.args[1]}" is not a command in {e.args[0]}. See "pydo -l" for a list of available commands.')
+        exit(-1)
+
+    except SubmoduleNotFound as e:
+        logger.error(f'"{e.args[0]}" is not a submodule in this project. See "pydo -l" for a list of available commands.')
         exit(-1)
 
     except MalformedCommand as e:
-        logger.fatal(f'Malformed command: "{args.command or args.helpcmd}".')
+        logger.error(f'Malformed command: "{args.command or args.helpcmd}".')
         exit(-1)
 
 if __name__ == '__main__':

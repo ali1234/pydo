@@ -3,10 +3,11 @@ import os
 import pathlib
 import sys
 from collections import defaultdict
+from contextlib import redirect_stdout
 from functools import wraps
 
 import logging
-logger = logging.getLogger(__name__)
+
 
 commands = defaultdict(dict)
 producers = {}
@@ -38,11 +39,12 @@ def command(produces=None, consumes=None, always=False, module=None):
 
         name = f'{_module.__name__.partition(".")[2]}:{f.__name__}'
 
+        logger = logging.LoggerAdapter(logging.getLogger('command'), {'command': name, '_lineno': f.__code__.co_firstlineno})
+
         logger.debug(f'Registering command {name} : {consumes} => {produces}.')
 
         @wraps(f)
         def _run_cmd_if_necessary():
-
             if always:
                 logger.debug(f'Running {name} because always is True.')
                 return f()

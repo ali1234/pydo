@@ -1,8 +1,11 @@
 from textwrap import TextWrapper
 
+from .loghelper import findlogger
 
-def textwrap(string_or_list, prefix='', join=' ', width=120):
+@findlogger
+def textwrap(logger, string_or_list, prefix='', join=' ', width=120):
     """Generates wordwrapped lines for config files."""
+
     wrapper = TextWrapper(
         break_long_words=False, break_on_hyphens=False,
         initial_indent=prefix, subsequent_indent=prefix,
@@ -10,15 +13,25 @@ def textwrap(string_or_list, prefix='', join=' ', width=120):
     )
 
     if isinstance(string_or_list, str):
-        return wrapper.fill(string_or_list)
+        result = wrapper.fill(string_or_list)
     else:
-        return wrapper.fill(join.join(string_or_list))
+        result = wrapper.fill(join.join(string_or_list))
 
+    logger.debug(f'textwrap output: {repr(result)}')
 
-def subst(template, output, substitutions):
+    return result
+
+@findlogger
+def subst(logger, template, output, substitutions):
     i = template.read_text()
+
+    logger.debug(f'subst input: {repr(i)}')
+    logger.debug(f'subst substitutions: {substitutions}')
+
     for k, v in substitutions.items():
         i = i.replace(k, v)
+
+    logger.debug(f'subst output: {repr(i)}')
 
     if output.exists() and output.read_text() == i:
         return

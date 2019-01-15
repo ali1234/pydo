@@ -1,12 +1,10 @@
 import shlex
 import subprocess
 
-import logging
+from .loghelper import findlogger
 
-logger = logging.getLogger(__name__)
-
-
-def call(commands, check=True, shell=False, env=None):
+@findlogger
+def call(logger, commands, check=True, shell=False, env=None):
     for c in commands:
         logger.info(c)
         if not shell:
