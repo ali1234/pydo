@@ -42,7 +42,7 @@ def parse_command(command, project_root):
             mod_name = project_root.name
         command = command[1]
     else:
-        raise MalformedCommand
+        raise MalformedCommand(command)
     return (mod_name, command)
 
 
@@ -63,6 +63,8 @@ def main():
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
+
+    logger = logging.getLogger(__name__)
 
     if args.directory is not None:
         os.chdir(args.directory)
@@ -85,21 +87,24 @@ def main():
             command = (args.command or args.helpcmd).split(':')
             mod_name, command = parse_command(command, commands.project_root)
             mod = importlib.import_module(mod_name)
-            if args.command:
-                commands.commands[mod.__name__][command]()
-            elif args.helpcmd:
-                help(commands.commands[mod.__name__][command])
+            try:
+                if args.command:
+                    commands.commands[mod.__name__][command]()
+                elif args.helpcmd:
+                    help(commands.commands[mod.__name__][command])
+            except KeyError:
+                raise CommandNotFound(mod.__name__, command)
 
-    except ProjectNotFound:
-        print('Not in a pydo project.')
+    except ProjectNotFound as e:
+        logger.fatal('Not in a pydo project.')
         exit(-1)
 
-    except CommandNotFound:
-        print('No such command.')
+    except CommandNotFound as e:
+        logger.fatal(f'"{args.command or args.helpcmd}" is not a command. See "pydo -l" for a list of available commands.')
         exit(-1)
 
-    except MalformedCommand:
-        print('Malformed command.')
+    except MalformedCommand as e:
+        logger.fatal(f'Malformed command: "{args.command or args.helpcmd}".')
         exit(-1)
 
 if __name__ == '__main__':
