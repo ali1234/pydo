@@ -39,8 +39,8 @@ def command(produces=None, consumes=None, always=False, module=None):
 
         logger = logging.LoggerAdapter(logging.getLogger('command'), {'command': name, '_lineno': f.__code__.co_firstlineno})
 
-        logger.debug(f'consumes {consumes}')
-        logger.debug(f'produces {produces}')
+        logger.debug(f'consumes: {consumes}')
+        logger.debug(f'produces: {produces}')
 
         @wraps(f)
         def _run_cmd_if_necessary():
