@@ -1,13 +1,11 @@
 import itertools
-import os
-import pathlib
 import sys
 from collections import defaultdict
-from contextlib import redirect_stdout
 from functools import wraps
 
 import logging
 
+from .loghelper import ProgressFilter
 
 commands = defaultdict(dict)
 producers = {}
@@ -41,7 +39,8 @@ def command(produces=None, consumes=None, always=False, module=None):
 
         logger = logging.LoggerAdapter(logging.getLogger('command'), {'command': name, '_lineno': f.__code__.co_firstlineno})
 
-        logger.debug(f'Registering command {name} : {consumes} => {produces}.')
+        logger.debug(f'consumes {consumes}')
+        logger.debug(f'produces {produces}')
 
         @wraps(f)
         def _run_cmd_if_necessary():
@@ -76,8 +75,9 @@ def command(produces=None, consumes=None, always=False, module=None):
         def _consider_cmd_and_deps():
             deps = []
             walk_producers(_run_cmd_if_necessary, deps, set())
-            for f in deps:
-                f()
+            with ProgressFilter(logging.getLogger('command'), deps) as pf:
+                for f in pf:
+                    f()
 
         if f.__name__[0] != '_':
             commands[_module.__package__][f.__name__] = _consider_cmd_and_deps

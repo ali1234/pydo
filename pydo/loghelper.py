@@ -42,14 +42,55 @@ class CoreFmColour(logging.Formatter):
 
 class CmdFm(logging.Formatter):
     def format(self, record):
-        command = f'{record._module.__name__}:{record._function.__name}:{record._lineno}'
+        command = f'{getattr(record, "progress", "")}{record.command}:{record._lineno}'
         return f'{record.levelname.title()}: {record.msg}'
 
 
 class CmdFmColour(logging.Formatter):
     def format(self, record):
-        command = f'{record.command}:{record._lineno}'
+        command = f'{getattr(record, "progress", "")}{record.command}:{record._lineno}'
         return f'{colors.color(command, **l2c(record.levelno))}: {colors.color(record.msg, fg="white")}'
+
+
+class ProgressFilter(logging.Filter):
+
+    def __init__(self, logger, it):
+        super().__init__(logger.name)
+        self.logger = logger
+        self.it = it
+        self.count = len(it)
+        self.fieldlen = len(str(self.count))
+        self.progress = 0
+
+    def __enter__(self):
+        self.logger.addFilter(self)
+        return self
+
+    def __exit__(self, *args):
+        self.logger.removeFilter(self)
+
+    def __iter__(self):
+        for item in self.it:
+            self.progress += 1
+            yield item
+
+    def filter(self, record):
+        record.progress = f'[{self.progress}/{self.count}] '
+        return True
+
+
+class Logger(object):
+
+    @findlogger
+    def __getattr__(logger, self, attr):
+        return getattr(logger, attr)
+
+    @staticmethod
+    def get() -> logging.Logger:
+        return Logger()
+
+
+log = Logger.get()
 
 
 def config(debug, colour):
