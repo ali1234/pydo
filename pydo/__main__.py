@@ -109,6 +109,8 @@ def main():
 
     except ProjectNotFound as e:
         logger.error('Not in a pydo project.')
+        if args.command == 'init':
+            logger.error("Did you mean 'pydo --init'?")
         exit(-1)
 
     except CommandNotFound as e:
