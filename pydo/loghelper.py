@@ -43,7 +43,7 @@ class CoreFmColour(logging.Formatter):
 class CmdFm(logging.Formatter):
     def format(self, record):
         command = f'{getattr(record, "progress", "")}{record.command}:{record._lineno}'
-        return f'{record.levelname.title()}: {record.msg}'
+        return f'{command}: {record.msg}'
 
 
 class CmdFmColour(logging.Formatter):
@@ -98,12 +98,12 @@ def config(debug, colour):
     core_logger.propagate = False
     core_logger.setLevel(logging.DEBUG if debug else logging.INFO)
     core_handler = logging.StreamHandler()
-    core_handler.setFormatter(CoreFmColour() if colour else CoreFm())
+    core_handler.setFormatter(CoreFmColour() if colors and colour else CoreFm())
     core_logger.addHandler(core_handler)
 
     cmd_logger = logging.getLogger('command')
     cmd_logger.propagate = False
     cmd_logger.setLevel(logging.DEBUG if debug else logging.INFO)
     cmd_handler = logging.StreamHandler()
-    cmd_handler.setFormatter(CmdFmColour() if colour else CmdFm())
+    cmd_handler.setFormatter(CmdFmColour() if colors and colour else CmdFm())
     cmd_logger.addHandler(cmd_handler)
