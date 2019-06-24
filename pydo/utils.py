@@ -44,13 +44,13 @@ def subst(logger, template, output, substitutions):
 verbosity = 1
 
 @findlogger
-def call(logger, commands, check=True, shell=False, env=None):
+def call(logger, commands, check=True, shell=False, env=None, interactive=False):
     for c in commands:
         logger.info(c)
         if not shell:
             c = shlex.split(c)
         subprocess.run(
             c, check=check, shell=shell, env=env,
-            stdout=subprocess.DEVNULL if verbosity < 2 else None,
-            stderr=subprocess.DEVNULL if verbosity < 1 else None,
+            stdout=subprocess.DEVNULL if not interactive and verbosity < 2 else None,
+            stderr=subprocess.DEVNULL if not interactive and verbosity < 1 else None,
         )
