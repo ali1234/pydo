@@ -12,7 +12,7 @@ setup(
     install_requires=[],
     extras_require={
         'color': ['ansicolors'],
-    }
+    },
     entry_points={
         'console_scripts': [
             'pydo = pydo.__main__:main'
