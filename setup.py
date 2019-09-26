@@ -10,6 +10,9 @@ setup(
     author_email='a.j.buxton@gmail.com',
     description='A metabuild automation system.',
     install_requires=[],
+    extras_require={
+        'color': ['ansicolors'],
+    }
     entry_points={
         'console_scripts': [
             'pydo = pydo.__main__:main'
