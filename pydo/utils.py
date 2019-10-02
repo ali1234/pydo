@@ -45,6 +45,7 @@ verbosity = 1
 
 @findlogger
 def call(logger, commands, check=True, shell=False, env=None, interactive=False):
+    logger.debug(env)
     for c in commands:
         logger.info(c)
         if not shell:
