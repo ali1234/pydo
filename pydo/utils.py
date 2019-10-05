@@ -3,7 +3,9 @@ import shlex
 import subprocess
 from textwrap import TextWrapper
 
+from .commands import command
 from .loghelper import findlogger
+
 
 @findlogger
 def textwrap(logger, string_or_list, prefix='', join=' ', width=120):
@@ -41,7 +43,9 @@ def subst(logger, template, output, substitutions):
     else:
         output.write_text(i)
 
+
 verbosity = 1
+
 
 @findlogger
 def call(logger, commands, check=True, shell=False, env=None, interactive=False):
@@ -55,3 +59,16 @@ def call(logger, commands, check=True, shell=False, env=None, interactive=False)
             stdout=subprocess.DEVNULL if not interactive and verbosity < 2 else None,
             stderr=subprocess.DEVNULL if not interactive and verbosity < 1 else None,
         )
+
+
+@findlogger
+def download(logger, dir, url):
+    filename = url.split('/')[-1]
+
+    @command(produces=[dir / filename])
+    def download():
+        cmd = f'cd {dir} && wget -N {url}'
+        logger.info(cmd)
+        subprocess.run(cmd, shell=True)
+
+    return dir / filename
