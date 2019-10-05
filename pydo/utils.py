@@ -67,7 +67,7 @@ def download(logger, dir, url):
 
     @command(produces=[dir / filename])
     def download():
-        cmd = f'cd {dir} && wget -N {url}'
+        cmd = f'mkdir -p {dir} && cd {dir} && wget -N {url}'
         logger.info(cmd)
         subprocess.run(cmd, shell=True)
 
